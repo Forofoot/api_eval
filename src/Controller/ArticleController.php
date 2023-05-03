@@ -26,11 +26,11 @@ class ArticleController extends AbstractController
 
         $article->setContent($r->get('content'));
 
-        // $article->setCreatedAt(new \DateTime());
+        $article->setCreatedAt(new \DateTimeImmutable('now'));
 
         $article->setState($r->get('state'));
-        
-        // $article->setPublishmentDate($r->get('publishmentDate'));
+
+        $article->setPublishmentDate(new \DateTimeImmutable($r->get('publishmentDate')));
 
         //on vérifie si l'utilisateur existe
         $user = $em->getRepository(User::class)->findOneBy(['id' => $r->get('user')]);
