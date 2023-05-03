@@ -4,9 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Article;
 use App\Entity\Category;
+use App\Service\Validator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -20,14 +22,14 @@ class CategoryController extends AbstractController
         return new JsonResponse($categories);
     }
 
-    #[Route('/category/{id}', name: 'app_category_show')]
+    #[Route('/category/{id}', name: 'app_category_show', methods: ['GET'])]
     public function show($id, Category $category = null, EntityManagerInterface $em){
         $category = $em->getRepository(Category::class)->findOneBy(['id' => $id]);
 
         $articles = $em->getRepository(Article::class)->findBy(['category' => $category]);
 
         if ($category === null) {
-            return new JsonResponse('Category not found', 204);
+            return new JsonResponse('Category not found', 404);
         }
 
         return new JsonResponse(
@@ -50,5 +52,36 @@ class CategoryController extends AbstractController
 
             ]
             , 200);
+    }
+
+    #[Route('/category', name: 'app_category_create', methods: ['POST'])]
+    public function create(EntityManagerInterface $em, Request $request, Validator $validator){
+
+        $category = new Category();
+
+        $category->setTitle($request->get('title'));
+
+        $isValid = $validator->isValid($category);
+        if($isValid !== true){
+            return new JsonResponse($isValid, 400);
+        }
+
+        $em->persist($category);
+        $em->flush();
+
+        return new JsonResponse('Category created', 200);
+    }
+
+    #[Route('/category/{id}', name: 'app_category_delete', methods: ['DELETE'])]
+    public function delete(Category $category = null, EntityManagerInterface $em){
+
+        if ($category == null) {
+            return new JsonResponse('Category not found', 404);
+        }
+        
+        $em->remove($category);
+        $em->flush();
+
+        return new JsonResponse('Category deleted', 200);
     }
 }

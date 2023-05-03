@@ -25,11 +25,11 @@ class Comment
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $Author = null;
+    private ?User $author = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Article $Article = null;
+    private ?Article $article = null;
 
     public function getId(): ?int
     {
@@ -74,24 +74,24 @@ class Comment
 
     public function getAuthor(): ?User
     {
-        return $this->Author;
+        return $this->author;
     }
 
-    public function setAuthor(?User $Author): self
+    public function setAuthor(?User $author): self
     {
-        $this->Author = $Author;
+        $this->author = $author;
 
         return $this;
     }
 
     public function getArticle(): ?Article
     {
-        return $this->Article;
+        return $this->article;
     }
 
-    public function setArticle(?Article $Article): self
+    public function setArticle(?Article $article): self
     {
-        $this->Article = $Article;
+        $this->article = $article;
 
         return $this;
     }
