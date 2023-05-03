@@ -39,6 +39,33 @@ class CategoryRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+    * @return Category[] Returns an array of Category objects
+    */
+   public function findAll(): array
+   {
+       return $this->createQueryBuilder('c')
+           ->select('c.id', 'c.title')
+           ->orderBy('c.id', 'DESC')
+           ->setMaxResults(3)
+           ->getQuery()
+           ->getResult()
+       ;
+   }
+
+   public function findOneById($value)
+   {
+       return $this->createQueryBuilder('c')
+           ->select('c.id, c.title, article.id as article_id, article.title as article_title, article.content, article.published_at, author.email')
+           ->leftJoin('c.article', 'article')
+           ->leftJoin('article.author', 'author')
+           ->andWhere('c.id = :val')
+           ->setParameter('val', $value)
+           ->getQuery()
+           ->getOneOrNullResult()
+       ;
+   }
+
 //    /**
 //     * @return Category[] Returns an array of Category objects
 //     */
