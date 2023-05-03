@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Article;
 use App\Entity\Category;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,12 +22,33 @@ class CategoryController extends AbstractController
 
     #[Route('/category/{id}', name: 'app_category_show')]
     public function show($id, Category $category = null, EntityManagerInterface $em){
-        $category = $em->getRepository(Category::class)->find($id);
+        $category = $em->getRepository(Category::class)->findOneBy(['id' => $id]);
+
+        $articles = $em->getRepository(Article::class)->findBy(['category' => $category]);
 
         if ($category === null) {
             return new JsonResponse('Category not found', 204);
         }
 
-        return new JsonResponse($category);
+        return new JsonResponse(
+            [
+                'category-id' => $category->getId(),
+                'category-title' => $category->getTitle(),
+
+                'articles' => array_map(function (Article $article) {
+                    return [
+                        'article-id' => $article->getId(),
+                        'article-title' => $article->getTitle(),
+                        'article-content' => $article->getContent(),
+                        'article-created_at' => $article->getCreatedAt(),
+                        'article-state' => $article->isState(),
+                        'article-publishment_date' => $article->getPublishmentDate(),
+                        'article-author' => $article->getAuthor()->getEmail(),
+                    ];
+                }, $articles)
+
+
+            ]
+            , 200);
     }
 }
