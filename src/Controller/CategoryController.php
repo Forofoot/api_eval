@@ -72,6 +72,37 @@ class CategoryController extends AbstractController
         return new JsonResponse('Category created', 200);
     }
 
+    #[Route('/category/{id}', name: 'app_category_update', methods: ['PATCH'])]
+    public function update(Category $category = null, EntityManagerInterface $em, Request $request, Validator $validator){
+
+        if ($category == null) {
+            return new JsonResponse('Category not found', 404);
+        }
+
+        $params = 0;
+
+        if($request->get('title') !== null){
+            $params++;
+            $category->setTitle($request->get('title'));
+        }
+
+        if($params > 0){
+
+            $isValid = $validator->isValid($category);
+            if($isValid !== true){
+                return new JsonResponse($isValid, 400);
+            }
+            $em->persist($category);
+            $em->flush();
+
+            return new JsonResponse('Category updated', 200);
+        }else{
+            return new JsonResponse('No parameters to update', 400);
+        }
+
+        return new JsonResponse('success', 200);
+    }
+
     #[Route('/category/{id}', name: 'app_category_delete', methods: ['DELETE'])]
     public function delete(Category $category = null, EntityManagerInterface $em){
 
