@@ -24,15 +24,11 @@ class TokenValidator{
             $token = $header['token'];
             $jwt = current($token);
             $key = $this->jwt_secret;
-            
             try{
                 $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
+                return array(true, $decoded);
             }catch(\Exception $e){
                 return new JsonResponse($e->getMessage(), 401);
-            }
-
-            if($decoded->roles != null && in_array('ROLE_ADMIN', $decoded->roles)){
-                return true;
             }
         }else{
             return new JsonResponse('Token not found', 404);

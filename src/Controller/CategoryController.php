@@ -12,13 +12,27 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\TokenValidator;
+use App\Service\UserValidator;
 
 class CategoryController extends AbstractController
 {
     #[Route('/categories', name: 'app_category')]
-    public function index(EntityManagerInterface $em): Response
+    public function index(EntityManagerInterface $em, Request $r, TokenValidator $t, UserValidator $u): Response
     {
-        $categories = $em->getRepository(Category::class)->findAll();
+        $header = $r->headers->all();
+
+        $checkToken = $t->checkToken($header);
+        if(is_array($checkToken) && $checkToken[0] === true){
+            $checkUser = $u->checkUser($checkToken[1]);
+            if($checkUser === true){
+                $categories = $em->getRepository(Category::class)->findAll();
+            }
+            else{
+                return $checkUser;
+            }
+        }else{
+            return $checkToken;
+        }
 
         return new JsonResponse($categories);
     }
