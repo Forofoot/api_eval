@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Comment;
+use App\Entity\Article;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -10,10 +12,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Service\TokenValidator;
 use App\Service\UserValidator;
 use App\Service\Validator;
+use DateTimeImmutable;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-
-use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 
 class CommentController extends AbstractController
 {
@@ -57,5 +59,39 @@ class CommentController extends AbstractController
         }
 
         return new JsonResponse('No changes', 400);
+    }
+
+    #[Route('/comment/{id}', name: 'app_comment_add', methods: ['POST'])]
+    public function add($id ,EntityManagerInterface $em, Request $r, Validator $v, TokenValidator $t, UserValidator $u): Response
+    {
+        $comment = new Comment();
+
+        $article = $em->getRepository(Article::class)->findOneBy(['id' => $id]);
+
+        if ($article === null) {
+            return new JsonResponse('Article not found', 404);
+        }
+
+        $comment->setComment($r->get('comment'));
+        $comment->setArticle($article);
+        $comment->setCreatedAt(new DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
+        $comment->setState(true);
+        $header = $r->headers->all();
+
+        $checkToken = $t->checkToken($header);
+        if(is_array($checkToken) && $checkToken[0] === true){
+            $currentUser = $em->getRepository(User::class)->findOneBy(['id' => $checkToken[1]->id]);
+            $comment->setAuthor($currentUser);
+            $isValid = $v->isValid($comment);
+            if($isValid !== true){
+                return new JsonResponse($isValid, 400);
+            }
+            $em->persist($comment);
+            $em->flush();
+
+            return new JsonResponse('Comment added', 200);
+        }else{
+            return $checkToken;
+        }
     }
 }

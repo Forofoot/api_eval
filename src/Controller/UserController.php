@@ -41,6 +41,7 @@ class UserController extends AbstractController
         $payload = [
             'iat' => time(),
             'exp' => time() + 3600,
+            'id' => $user->getId(),
             'roles' => $user->getRoles(),
         ];
 

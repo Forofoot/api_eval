@@ -97,14 +97,14 @@ class ArticleController extends AbstractController
 
         return new JsonResponse(
         [
-            'id' => $article->getId(),
-            'title' => $article->getTitle(),
-            'content' => $article->getContent(),
-            'createdAt' => $article->getCreatedAt(),
-            'state' => $article->isState(),
-            'publishmentDate' => $article->getPublishmentDate(),
-            'author' => $article->getAuthor()->getEmail(),
-            'category' => $article->getCategory()->getTitle(),
+        'id' => $article->getId(),
+        'title' => $article->getTitle(),
+        'content' => $article->getContent(),
+        'createdAt' => $article->getCreatedAt(),
+        'state' => $article->isState(),
+        'publishmentDate' => $article->getPublishmentDate(),
+        'author' => $article->getAuthor()->getEmail(),
+        'category' => $article->getCategory()->getTitle(),
         'comments'  => array_map(function (Comment $comment) {
             return [
                 'id' => $comment->getId(),
