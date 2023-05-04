@@ -177,4 +177,35 @@ class ArticleController extends AbstractController
         return new JsonResponse('Token invalide', 203);
     }
     
+    //DELETE
+    #[Route('/article/{id}', name: 'delete_article', methods: ['DELETE'])]
+    public function delete(Article $article = null, EntityManagerInterface $em, Request $r) : Response{
+        if($article == null){
+            return new JsonResponse('Article introuvable', 204);
+        }
+
+        //validation token
+        $headers = $r->headers->all();
+
+        if($headers['token'] != null && !empty($headers['token'])){
+            $jwt = current($headers['token']);
+            $key = $this->getParameter('jwt_secret');
+
+            try{
+                $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
+            }catch(\Exception $e){
+                return new JsonResponse($e->getMessage(), 403);
+            }
+
+            //Validation du rôle
+            if($decoded->roles != null && in_array('ROLE_ADMIN', $decoded->roles)){
+                $em->remove($article);
+                $em->flush();
+
+                return new JsonResponse('Article supprimé', 200);
+            }
+            return new JsonResponse('Vous ne disposez pas des droits pour supprimer un article', 403);
+        }
+        return new JsonResponse('Token invalide', 203);
+    }
 }
