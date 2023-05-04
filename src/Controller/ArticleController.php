@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Article;
 use App\Entity\Category;
 use App\Entity\User;
+use App\Entity\Comment;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -86,13 +87,32 @@ class ArticleController extends AbstractController
     #[Route('/article/{id}', name: 'one_article', methods: ['GET'])]
     public function one_article($id, EntityManagerInterface $em): Response
     {
-        $article = $em->getRepository(Article::class)->findOneById($id);
+        $article = $em->getRepository(Article::class)->findOneBy(['id' => $id]);
+
+        $comments = $em->getRepository(Comment::class)->findBy(['article' => $article]);
 
         if($article == null){
             return new JsonResponse('Article introuvable', 404);
         }
 
-        return new JsonResponse($article, 200);
+        return new JsonResponse(
+        [
+            'id' => $article->getId(),
+            'title' => $article->getTitle(),
+            'content' => $article->getContent(),
+            'createdAt' => $article->getCreatedAt(),
+            'state' => $article->isState(),
+            'publishmentDate' => $article->getPublishmentDate(),
+            'author' => $article->getAuthor()->getEmail(),
+            'category' => $article->getCategory()->getTitle(),
+        'comments'  => array_map(function (Comment $comment) {
+            return [
+                'id' => $comment->getId(),
+                'comment' => $comment->getComment(),
+                'author' => $comment->getAuthor()->getEmail(),
+                'createdAt' => $comment->getCreatedAt()
+            ];
+        }, $comments)], 200);
     }
 
     //UPDATE ARTICLE
