@@ -17,22 +17,9 @@ use App\Service\UserValidator;
 class CategoryController extends AbstractController
 {
     #[Route('/categories', name: 'app_category')]
-    public function index(EntityManagerInterface $em, Request $r, TokenValidator $t, UserValidator $u): Response
+    public function index(EntityManagerInterface $em): Response
     {
-        $header = $r->headers->all();
-
-        $checkToken = $t->checkToken($header);
-        if(is_array($checkToken) && $checkToken[0] === true){
-            $checkUser = $u->checkUser($checkToken[1]);
-            if($checkUser === true){
-                $categories = $em->getRepository(Category::class)->findAll();
-            }
-            else{
-                return $checkUser;
-            }
-        }else{
-            return $checkToken;
-        }
+        $categories = $em->getRepository(Category::class)->findAll();
 
         return new JsonResponse($categories);
     }
