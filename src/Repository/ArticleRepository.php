@@ -42,8 +42,8 @@ class ArticleRepository extends ServiceEntityRepository
     public function findOneById($value)
     {
         return $this->createQueryBuilder('a')
-            ->select('a.id, a.title, a.content, a.state, u.id as user, u.lastName, u.firstName, c.id as category, c.name')
-            ->leftJoin('a.user', 'u')
+            ->select('a.id, a.title, a.content, a.state, u.id as user, u.lastName, u.firstName, c.id as category, c.title as category_title')
+            ->leftJoin('a.author', 'u')
             ->leftJoin('a.category', 'c')
             ->andWhere('a.id = :val')
             ->setParameter('val', $value)
