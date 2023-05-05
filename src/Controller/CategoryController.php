@@ -28,7 +28,7 @@ class CategoryController extends AbstractController
     public function show($id, Category $category = null, EntityManagerInterface $em){
         $category = $em->getRepository(Category::class)->findOneBy(['id' => $id]);
 
-        $articles = $em->getRepository(Article::class)->findBy(['category' => $category]);
+        $articles = $em->getRepository(Article::class)->findBy(['category' => $category, 'state' => true]);
 
         if ($category === null) {
             return new JsonResponse('Category not found', 404);
