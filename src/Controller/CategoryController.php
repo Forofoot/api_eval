@@ -57,25 +57,37 @@ class CategoryController extends AbstractController
     }
 
     #[Route('/category', name: 'app_category_create', methods: ['POST'])]
-    public function create(EntityManagerInterface $em, Request $request, Validator $validator){
+    public function create(EntityManagerInterface $em, Request $r, Validator $v, TokenValidator $t, UserValidator $u){
 
         $category = new Category();
 
-        $category->setTitle($request->get('title'));
+        $category->setTitle($r->get('title'));
 
-        $isValid = $validator->isValid($category);
-        if($isValid !== true){
-            return new JsonResponse($isValid, 400);
+        $header = $r->headers->all();
+
+        $checkToken = $t->checkToken($header);
+        if(is_array($checkToken) && $checkToken[0] === true){
+            $checkUser = $u->checkUser($checkToken[1]);
+            if($checkUser === true){
+                $isValid = $v->isValid($category);
+                if($isValid !== true){
+                    return new JsonResponse($isValid, 400);
+                }
+                $em->persist($category);
+                $em->flush();
+                return new JsonResponse('Category created', 200);
+            }else{
+                return $checkUser;
+            }
+        }else{
+            return $checkToken;
         }
 
-        $em->persist($category);
-        $em->flush();
-
-        return new JsonResponse('Category created', 200);
+        return new JsonResponse('Success', 404);
     }
 
     #[Route('/category/{id}', name: 'app_category_update', methods: ['PATCH'])]
-    public function update(Category $category = null, EntityManagerInterface $em, Request $request, Validator $validator){
+    public function update(Category $category = null, EntityManagerInterface $em, Request $r, Validator $v, TokenValidator $t, UserValidator $u){
 
         if ($category == null) {
             return new JsonResponse('Category not found', 404);
@@ -83,38 +95,61 @@ class CategoryController extends AbstractController
 
         $params = 0;
 
-        if($request->get('title') !== null){
+        if($r->get('title') !== null){
             $params++;
-            $category->setTitle($request->get('title'));
+            $category->setTitle($r->get('title'));
         }
 
-        if($params > 0){
+        $header = $r->headers->all();
 
-            $isValid = $validator->isValid($category);
-            if($isValid !== true){
-                return new JsonResponse($isValid, 400);
+        $checkToken = $t->checkToken($header);
+        if(is_array($checkToken) && $checkToken[0] === true){
+            $checkUser = $u->checkUser($checkToken[1]);
+            if($checkUser === true){
+                if ($params > 0){
+                    $isValid = $v->isValid($category);
+                    if($isValid !== true){
+                        return new JsonResponse($isValid, 400);
+                    }
+                    $em->persist($category);
+                    $em->flush();
+
+                    return new JsonResponse('Category updated', 200);
+                }else{
+                    return new JsonResponse('No parameters to update', 400);
+                }
+            }else{
+                return $checkUser;
             }
-            $em->persist($category);
-            $em->flush();
-
-            return new JsonResponse('Category updated', 200);
         }else{
-            return new JsonResponse('No parameters to update', 400);
+            return $checkToken;
         }
-
-        return new JsonResponse('success', 200);
     }
 
     #[Route('/category/{id}', name: 'app_category_delete', methods: ['DELETE'])]
-    public function delete(Category $category = null, EntityManagerInterface $em){
+    public function delete(Category $category = null, EntityManagerInterface $em, Validator $v, TokenValidator $t, UserValidator $u, Request $r){
 
         if ($category == null) {
             return new JsonResponse('Category not found', 404);
         }
-        
-        $em->remove($category);
-        $em->flush();
 
-        return new JsonResponse('Category deleted', 200);
+        $header = $r->headers->all();
+
+        $checkToken = $t->checkToken($header);
+        if(is_array($checkToken) && $checkToken[0] === true){
+            $checkUser = $u->checkUser($checkToken[1]);
+            if($checkUser === true){
+                $em->remove($category);
+                $em->flush();
+
+                return new JsonResponse('Category deleted', 200);
+            }else{
+                return $checkUser;
+            }
+        }else{
+            return $checkToken;
+        }
+
+        return new JsonResponse('Success', 404);
     }
 }
