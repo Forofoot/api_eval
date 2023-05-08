@@ -23,6 +23,11 @@ class ArticleController extends AbstractController
     #[Route('/article', name: 'add_article', methods: ['POST'])]
     public function add(EntityManagerInterface $em, Request $r, Validator $v, TokenValidator $t, UserValidator $u): Response
     {
+        $category = $em->getRepository(Category::class)->findOneBy(['id' => $r->get('category')]);
+
+        if($category == null){
+            return new JsonResponse('Catégorie introuvable', 404);
+        }
         //validation token
         $header = $r->headers->all();
 
@@ -34,14 +39,13 @@ class ArticleController extends AbstractController
             if($checkUser === true){
                 $article->setTitle($r->get('title'));
                 $article->setContent($r->get('content'));
-                $article->setCreatedAt(new \DateTimeImmutable());
+                $article->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
                 $article->setState($r->get('state'));
                 if ($r->get('state') == 'true') {
-                    $article->setPublishmentDate(new \DateTimeImmutable());
+                    $article->setPublishmentDate(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
                 }
                 $user = $em->getRepository(User::class)->findOneBy(['id' => $checkToken[1]->id]);
                 $article->setAuthor($user);
-                $category = $em->getRepository(Category::class)->findOneBy(['id' => $r->get('category')]);
                 $article->setCategory($category);
 
                 $isValid = $v->isValid($article);
@@ -126,7 +130,7 @@ class ArticleController extends AbstractController
                 }
                 if($r->get('state') != null){
                     if ($r->get('state') == true) {
-                        $article->setPublishmentDate(new \DateTimeImmutable());
+                        $article->setPublishmentDate(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
                     }else{
                         $article->setPublishmentDate(null);
                     }
