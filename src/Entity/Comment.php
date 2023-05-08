@@ -8,7 +8,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
-#[ORM\HasLifecycleCallbacks]
 class Comment
 {
     #[ORM\Id]
@@ -100,12 +99,5 @@ class Comment
         $this->article = $article;
 
         return $this;
-    }
-
-    #[ORM\PrePersist]
-    public function setDefaultValue(): void
-    {
-        $this->created_at = new \DateTimeImmutable();
-        $this->state = true;
     }
 }
