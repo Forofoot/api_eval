@@ -82,8 +82,6 @@ class CategoryController extends AbstractController
         }else{
             return $checkToken;
         }
-
-        return new JsonResponse('Success', 404);
     }
 
     #[Route('/category/{id}', name: 'app_category_update', methods: ['PATCH'])]
@@ -149,7 +147,5 @@ class CategoryController extends AbstractController
         }else{
             return $checkToken;
         }
-
-        return new JsonResponse('Success', 404);
     }
 }

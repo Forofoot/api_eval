@@ -62,8 +62,6 @@ class ArticleController extends AbstractController
             return $checkToken;
         }
 
-        return new JsonResponse('Success', 404);
-
     }
 
     //DETAIL ARTICLE
@@ -160,8 +158,6 @@ class ArticleController extends AbstractController
         }else{
             return $checkToken;
         }
-
-        return new JsonResponse('Token invalide', 404);
     }
     
     //DELETE
@@ -190,6 +186,5 @@ class ArticleController extends AbstractController
         }else{
             return $checkToken;
         }
-        return new JsonResponse('Token invalide', 203);
     }
 }
