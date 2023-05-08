@@ -13,7 +13,6 @@ use App\Service\TokenValidator;
 use App\Service\UserValidator;
 use App\Service\Validator;
 use DateTimeImmutable;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -58,7 +57,7 @@ class CommentController extends AbstractController
             return $checkToken;
         }
 
-        return new JsonResponse('No changes', 400);
+        return new JsonResponse('Token invalide', 404);
     }
 
     #[Route('/comment/{id}', name: 'app_comment_add', methods: ['POST'])]

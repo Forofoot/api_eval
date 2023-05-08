@@ -40,7 +40,7 @@ class Article
     #[ORM\Column]
     private ?bool $state = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $publishment_date = null;
 
     #[ORM\ManyToOne(inversedBy: 'articles')]
@@ -117,7 +117,7 @@ class Article
         return $this->publishment_date;
     }
 
-    public function setPublishmentDate(\DateTimeImmutable $publishment_date): self
+    public function setPublishmentDate(?\DateTimeImmutable $publishment_date): self
     {
         $this->publishment_date = $publishment_date;
 

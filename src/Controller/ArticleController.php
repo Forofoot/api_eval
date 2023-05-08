@@ -17,9 +17,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
-
 class ArticleController extends AbstractController
 {
     //AJOUT ARTICLE
@@ -39,7 +36,9 @@ class ArticleController extends AbstractController
                 $article->setContent($r->get('content'));
                 $article->setCreatedAt(new \DateTimeImmutable());
                 $article->setState($r->get('state'));
-                $article->setPublishmentDate(new \DateTimeImmutable());
+                if ($r->get('state') == 'true') {
+                    $article->setPublishmentDate(new \DateTimeImmutable());
+                }
                 $user = $em->getRepository(User::class)->findOneBy(['id' => $checkToken[1]->id]);
                 $article->setAuthor($user);
                 $category = $em->getRepository(Category::class)->findOneBy(['id' => $r->get('category')]);
@@ -106,6 +105,7 @@ class ArticleController extends AbstractController
         if($article == null){
             return new JsonResponse('Article introuvable', 404);
         }
+
         $params = 0;
 
         //validation token
@@ -124,12 +124,13 @@ class ArticleController extends AbstractController
                     $article->setContent($r->get('content'));
                 }
                 if($r->get('state') != null){
+                    if ($r->get('state') == true) {
+                        $article->setPublishmentDate(new \DateTimeImmutable());
+                    }else{
+                        $article->setPublishmentDate(null);
+                    }
                     $params++;
                     $article->setState($r->get('state'));
-                }
-                if($r->get('publishmentDate') != null){
-                    $params++;
-                    $article->setPublishmentDate(new \DateTimeImmutable());
                 }
                 if($r->get('category') != null){
                     $params++;
@@ -157,12 +158,12 @@ class ArticleController extends AbstractController
             return $checkToken;
         }
 
-        return new JsonResponse('Success', 404);
+        return new JsonResponse('Token invalide', 404);
     }
     
     //DELETE
     #[Route('/article/{id}', name: 'delete_article', methods: ['DELETE'])]
-    public function delete(Article $article = null, EntityManagerInterface $em, Request $r) : Response{
+    public function delete(Article $article = null, EntityManagerInterface $em, Request $r, TokenValidator $t, UserValidator $u) : Response{
         if($article == null){
             return new JsonResponse('Article introuvable', 204);
         }
@@ -170,24 +171,21 @@ class ArticleController extends AbstractController
         //validation token
         $headers = $r->headers->all();
 
-        if($headers['token'] != null && !empty($headers['token'])){
-            $jwt = current($headers['token']);
-            $key = $this->getParameter('jwt_secret');
+        $checkToken = $t->checkToken($headers);
 
-            try{
-                $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
-            }catch(\Exception $e){
-                return new JsonResponse($e->getMessage(), 403);
-            }
-
-            //Validation du rôle
-            if($decoded->roles != null && in_array('ROLE_ADMIN', $decoded->roles)){
+        if(is_array($checkToken) && $checkToken[0] === true){
+            $checkUser = $u->checkUser($checkToken[1]);
+            if($checkUser === true){
                 $em->remove($article);
                 $em->flush();
 
                 return new JsonResponse('Article supprimé', 200);
             }
-            return new JsonResponse('Vous ne disposez pas des droits pour supprimer un article', 403);
+            else{
+                return $checkUser;
+            }
+        }else{
+            return $checkToken;
         }
         return new JsonResponse('Token invalide', 203);
     }
