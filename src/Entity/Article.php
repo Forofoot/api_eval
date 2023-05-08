@@ -38,6 +38,8 @@ class Article
     private ?\DateTimeImmutable $created_at = null;
 
     #[ORM\Column]
+    #[Assert\Type(type: 'bool')]
+    #[Assert\NotNull]
     private ?bool $state = null;
 
     #[ORM\Column(nullable: true)]
@@ -45,6 +47,7 @@ class Article
 
     #[ORM\ManyToOne(inversedBy: 'articles')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull]
     private ?User $author = null;
 
     #[ORM\ManyToOne(inversedBy: 'articles')]

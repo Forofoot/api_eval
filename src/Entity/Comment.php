@@ -25,10 +25,8 @@ class Comment
     private ?\DateTimeImmutable $created_at = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank]
     #[Assert\Type(type: 'bool')]
     #[Assert\NotNull]
-    #[Assert\Choice(choices: [true, false])]
     private ?bool $state = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]

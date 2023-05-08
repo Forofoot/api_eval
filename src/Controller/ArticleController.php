@@ -89,12 +89,15 @@ class ArticleController extends AbstractController
         'author' => $article->getAuthor()->getEmail(),
         'category' => $article->getCategory()->getTitle(),
         'comments'  => array_map(function (Comment $comment) {
-            return [
-                'id' => $comment->getId(),
-                'comment' => $comment->getComment(),
-                'author' => $comment->getAuthor()->getEmail(),
-                'createdAt' => $comment->getCreatedAt()
-            ];
+            if ($comment->isState() == true){
+                return [
+                    'id' => $comment->getId(),
+                    'comment' => $comment->getComment(),
+                    'author' => $comment->getAuthor()->getEmail(),
+                    'createdAt' => $comment->getCreatedAt(),
+                    'state' => $comment->isState()
+                ];
+            }
         }, $comments)], 200);
     }
 

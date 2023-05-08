@@ -57,7 +57,7 @@ class CommentController extends AbstractController
             return $checkToken;
         }
 
-        return new JsonResponse('Token invalide', 404);
+        return new JsonResponse('Erreur', 404);
     }
 
     #[Route('/comment/{id}', name: 'app_comment_add', methods: ['POST'])]
